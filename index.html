@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR 요청 포털</title>
+
+<style>
+
+body{
+    margin:0;
+    padding:40px;
+    background:#f5f7fa;
+    font-family:'Segoe UI',sans-serif;
+}
+
+.container{
+    max-width:800px;
+    margin:auto;
+    background:#ffffff;
+    border-radius:16px;
+    padding:30px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+
+h1{
+    color:#003875;
+    margin-bottom:25px;
+}
+
+label{
+    display:block;
+    margin-top:15px;
+    margin-bottom:5px;
+    font-weight:600;
+}
+
+input,
+textarea,
+select{
+    width:100%;
+    padding:12px;
+    border:1px solid #dcdcdc;
+    border-radius:8px;
+    box-sizing:border-box;
+}
+
+textarea{
+    height:120px;
+}
+
+button{
+    margin-top:20px;
+    background:#003875;
+    color:white;
+    border:none;
+    padding:14px 24px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:15px;
+}
+
+button:hover{
+    background:#0050a6;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h1>HR 요청 포털</h1>
+
+<label>이름</label>
+<input type="text" id="name">
+
+<label>부서</label>
+<input type="text" id="dept">
+
+<label>요청구분</label>
+<select id="category">
+    <option>증명서</option>
+    <option>급여문의</option>
+    <option>복리후생</option>
+    <option>인사제도</option>
+    <option>기타</option>
+</select>
+
+<label>내용</label>
+<textarea id="content"></textarea>
+
+<button onclick="submitRequest()">신청하기</button>
+
+</div>
+
+<script>
+
+// =======================
+// Supabase 설정
+// =======================
+
+const SUPABASE_URL =
+'https://wvwbsgwramzmgvnqbwqh.supabase.co';
+
+const SUPABASE_KEY =
+'sb_publishable_1iQ5k9ewwXCQseE6goRkwg_nu8GPUHU';
+
+
+// =======================
+// 신청 함수
+// =======================
+
+async function submitRequest(){
+
+    const requestNo =
+        'HR-' +
+        Date.now();
+
+    const data = {
+        request_no : requestNo,
+        name : document.getElementById('name').value,
+        dept : document.getElementById('dept').value,
+        category : document.getElementById('category').value,
+        content : document.getElementById('content').value,
+        created_at : new Date()
+    };
+
+    try{
+
+        const response = await fetch(
+            SUPABASE_URL + '/rest/v1/hr_request',
+            {
+                method:'POST',
+                headers:{
+                    'apikey':SUPABASE_KEY,
+                    'Authorization':'Bearer ' + SUPABASE_KEY,
+                    'Content-Type':'application/json',
+                    'Prefer':'return=representation'
+                },
+                body:JSON.stringify(data)
+            }
+        );
+
+        if(response.ok){
+
+            alert(
+                '✅ 신청이 완료되었습니다.\n\n' +
+                '접수번호 : ' +
+                requestNo
+            );
+
+            document.getElementById('name').value='';
+            document.getElementById('dept').value='';
+            document.getElementById('content').value='';
+
+        }else{
+
+            const errorMessage =
+                await response.text();
+
+            alert(
+                '❌ 저장 실패\n\n' +
+                errorMessage
+            );
+
+        }
+
+    }catch(error){
+
+        alert(
+            '❌ Supabase 연결 실패\n\n' +
+            error.message
+        );
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
